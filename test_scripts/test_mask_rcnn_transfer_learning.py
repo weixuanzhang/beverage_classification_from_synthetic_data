@@ -201,7 +201,7 @@ output = model(images,targets)   # Returns losses and detections
 
 model.eval()
 
-img_path = "/home/weixuan/Documents/Code/blenderproc/data/annotation/images/000001.jpg"
+img_path = "/home/weixuan/Documents/Code/blenderproc/data/annotation/images/000017.jpg"
 imgs = Image.open(img_path)
 transform = T.Compose([T.ToTensor()])
 imgs = transform(imgs)
