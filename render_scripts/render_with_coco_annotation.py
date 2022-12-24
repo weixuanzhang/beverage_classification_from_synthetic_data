@@ -69,7 +69,8 @@ light.set_energy(500)
 
 # activate normal rendering
 bproc.renderer.enable_normals_output()
-bproc.renderer.enable_segmentation_output(map_by=["category_id", "instance", "name"])
+# bproc.renderer.enable_segmentation_output(map_by=["category_id", "instance", "name"])
+bproc.renderer.enable_segmentation_output(map_by=["category_id", "instance"])
 
 
 # render the whole pipeline
