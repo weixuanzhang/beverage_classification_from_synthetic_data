@@ -1,6 +1,7 @@
 import blenderproc as bproc
 import bpy
 import argparse
+import numpy as np
 
 # import pydevd_pycharm
 # pydevd_pycharm.settrace('localhost', port=12345, stdoutToServer=True, stderrToServer=True)
@@ -10,8 +11,8 @@ C = bpy.context
 scn = C.scene
 
 parser = argparse.ArgumentParser()
-parser.add_argument('camera', nargs='?', default="examples/resources/camera_positions", help="Path to the camera file")
-args = parser.parse_args()
+# parser.add_argument('camera', nargs='?', default="examples/resources/camera_positions", help="Path to the camera file")
+# args = parser.parse_args()
 
 bproc.init()
 
@@ -19,17 +20,26 @@ blend_path = '/home/weixuan/Documents/Code/blenderproc/assets/scene/base_scene_w
 objs = bproc.loader.load_blend(blend_path)
 
 # Set some category ids for loaded objects
+poi_objs = []
 for j, obj in enumerate(objs):
     print(obj.get_name())
+    # print(obj.get_bound_box())
     if 'can' in obj.get_name() or 'Can' in obj.get_name():
         obj.set_cp("category_id", 1)
+        #only add the object without a child  into the poi_objs
+        if obj.get_children() == []:
+            poi_objs.append(obj)
     elif 'bottle' in obj.get_name() or 'Bottle' in obj.get_name():
         obj.set_cp("category_id", 2)
         # obj.set_cp("name","bottle")
+        # only add the object without a child  into the poi_objs
+        if obj.get_children() == []:
+            poi_objs.append(obj)
 
     else:
         obj.set_cp("category_id", 3)
         # obj.set_cp("name","N")
+
 
 #load the environment
 hdri_path = "/home/weixuan/Documents/Code/blenderproc/assets/world/hdris/photo_studio_01_4k.exr"
@@ -58,12 +68,25 @@ bproc.camera.set_resolution(640, 480)
 # bproc.camera.add_camera_pose(matrix_world)
 
 # read the camera positions file and convert into homogeneous camera-world transformation
-with open(args.camera, "r") as f:
-    for line in f.readlines():
-        line = [float(x) for x in line.split()]
-        position, euler_rotation = line[:3], line[3:6]
-        matrix_world = bproc.math.build_transformation_mat(position, euler_rotation)
-        bproc.camera.add_camera_pose(matrix_world)
+# with open(args.camera, "r") as f:
+#     for line in f.readlines():
+#         line = [float(x) for x in line.split()]
+#         position, euler_rotation = line[:3], line[3:6]
+#         matrix_world = bproc.math.build_transformation_mat(position, euler_rotation)
+#         bproc.camera.add_camera_pose(matrix_world)
+
+#camera sampling
+# Find point of interest, all cam poses should look towards it
+poi = bproc.object.compute_poi(poi_objs)
+# Sample five camera poses
+for i in range(5):
+    # Sample random camera location above objects
+    location = np.random.uniform([1.0, 9.5, 3.4], [2.0, 9.4, 7.4])
+    # Compute rotation based on vector going from location towards poi
+    rotation_matrix = bproc.camera.rotation_from_forward_vec(poi - location, inplane_rot=np.random.uniform(-0.1, 0.1))
+    # Add homog cam pose based on location an rotation
+    cam2world_matrix = bproc.math.build_transformation_mat(location, rotation_matrix)
+    bproc.camera.add_camera_pose(cam2world_matrix)
 
 
 #Create a point light
