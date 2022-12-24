@@ -15,17 +15,21 @@ args = parser.parse_args()
 
 bproc.init()
 
-blend_path = '/home/weixuan/Documents/Code/blenderproc/assets/scene/base_scene.blend'
+blend_path = '/home/weixuan/Documents/Code/blenderproc/assets/scene/base_scene_water_removed.blend'
 objs = bproc.loader.load_blend(blend_path)
 
 # Set some category ids for loaded objects
 for j, obj in enumerate(objs):
+    print(obj.get_name())
     if 'can' in obj.get_name() or 'Can' in obj.get_name():
         obj.set_cp("category_id", 1)
     elif 'bottle' in obj.get_name() or 'Bottle' in obj.get_name():
         obj.set_cp("category_id", 2)
+        # obj.set_cp("name","bottle")
+
     else:
         obj.set_cp("category_id", 3)
+        # obj.set_cp("name","N")
 
 #load the environment
 hdri_path = "/home/weixuan/Documents/Code/blenderproc/assets/world/hdris/photo_studio_01_4k.exr"
